@@ -2,97 +2,81 @@
 <html>
 
 <head>
-    <title>Latihan7</title>
+    <meta charset="utf-8">
+    <title>Leaflet</title>
+    <!-- Style Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <!-- The line below is only needed for old environments like Internet
-    Explorer and Android 4.x -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <style>
-        #map {
-            height: 1000px;
-        }
-    </style>
 </head>
 
 <body>
-    <div id="map"></div>
+    <div id="map" style="height: 600px; margin-top: 20px; margin-bottom: 20px; margin-left: 5px; margin-right: 15px;">
+    </div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
-        var map = L.map('map').setView([-7.797068, 110.370529], 13);
+        // tampilan awal peta
+        var map = L.map("map").setView([-7.9668418, 110.5985915], 12);
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
+            maxZoom: 30,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
-        // Tambah Titik
-        var marker = L.marker([-7.797068, 110.370529]).addTo(map);
 
-        var circle = L.circle([-7.797068, 110.370529], {
-            color: 'red',
-            fillColor: '#f03',
-            fillOpacity: 0.5,
-            radius: 500
-        }).addTo(map);
-
-        var polygon = L.polygon([
-            [-7.797068, 110.370529],
-            [-7.797068, 110.370529],
-            [-7.797068, 110.370529]
-        ]).addTo(map);
-
-        marker.bindPopup("<b>Hello world!</b><br>I am a popup.").openPopup();
-        circle.bindPopup("I am a circle.");
-        polygon.bindPopup("I am a polygon.");
-
-        var popup = L.popup()
-            .setLatLng([-7.797068, 110.370529])
-            .setContent("I am a standalone popup.")
-            .openOn(map);
-
-        function onMapClick(e) {
-            alert("You clicked the map at " + e.latlng);
+        //tampilan marker
+        var coordinates = [
+            { lat: -7.924796 , lon: 110.641146, info: 'Gua Pindul' },
+            { lat: -7.928124 , lon: 110.638239, info: 'Kedunggupit Adventure' },
+            { lat: -7.931872 , lon: 110.686644, info: 'Gua Winong' },
+            { lat: -7.926935 , lon: 110.648075, info: 'Gua Gelatik' },
+            { lat: -7.932607  , lon: 110.649441, info: 'Gua Gelatik' },
+        ];
+        for (var i = 0; i < coordinates.length; i++) {
+            var marker = L.marker([coordinates[i].lat, coordinates[i].lon]).addTo(map);
+            marker.bindPopup(coordinates[i].info);
         }
 
-        map.on('click', onMapClick);
-
-        var popup = L.popup();
-
-        function onMapClick(e) {
-            popup
-                .setLatLng(e.latlng)
-                .setContent("You clicked the map at " + e.latlng.toString())
-                .openOn(map);
+        // radius Lingkaran
+        var circleCoordinates = [
+            [-7.9561, 110.6584]
+        ];
+        var circleRadiuses = [5000, 5000, 5000, 5000];
+        var circleColors = ['green', 'yellow', 'yellow', 'yellow'];
+        for (var i = 0; i < circleCoordinates.length; i++) {
+            var circle = L.circle(circleCoordinates[i], {
+                color: circleColors[i],
+                fillColor: circleColors[i],
+                fillOpacity: 0.2,
+                radius: circleRadiuses[i]
+            }).addTo(map);
         }
 
-        var markers = [
+        // Polygon
+        var polygons = [
             {
-                name: "Gua Pindul",
-                location: [-7.929026, 110.644548]
-            },
-            {
-                name: "Rumahku",
-                location: [-7.960093, 110.639287]
-            },
-            {
-                name: "Sekolah Vokasi",
-                location: [-7.774791 , 110.374513]
-            },
-            {
-                name: "Laguna Depok",
-                location: [-8.010638 , 110.292785]
+                coordinates: [
+                [-7.955964, 110.648194],
+                [-7.956143, 110.647372],
+                [-7.954663, 110.647264],
+                [-7.954599, 110.647932]
+                ],
+                color: 'red',
+                fillColor: 'red',
+                fillOpacity: 0.5,
+                popupContent: 'Lapangan Sepak Bola Wiladeg'
             }
         ];
 
-        for (var i = 0; i < markers.length; i++) {
-            var marker = L.marker(markers[i].location).addTo(map);
-            marker.bindPopup(markers[i].name);
-        }
+        polygons.forEach(function (polygonData) {
+            var polygon = L.polygon(polygonData.coordinates, {
+                color: polygonData.color,
+                fillColor: polygonData.fillColor,
+                fillOpacity: polygonData.fillOpacity
+            }).addTo(map);
 
-
-
-        map.on('click', onMapClick);
-
+            // info
+            polygon.bindPopup(polygonData.popupContent);
+        });
     </script>
 </body>
 

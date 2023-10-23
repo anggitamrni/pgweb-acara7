@@ -1,91 +1,154 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" dir="ltr">
 
 <head>
-    <title>My Map</title>
-    <link rel="stylesheet" href="https://openlayers.org/en/v3.20.1/css/ol.css" type="text/css">
-    <!-- The line below is only needed for old environments like Internet
-Explorer and Android 4.x -->
-    <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,El
-ement.prototype.classList,URL"></script>
-    <script src="https://openlayers.org/en/v3.20.1/build/ol.js"></script>
+    <meta charset="utf-8">
+    <title>OpenLayers</title>
+    <!-- Style Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+        integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <!-- css style openlayers -->
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.5.0/css/ol.css"
+        type="text/css" />
     <style>
-        #map:focus {
-            outline: maroon solid 0.15em;
+        #map {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: auto;
+            left: auto;
+            overflow: hidden;
+        }
+
+        #map-buttons {
+            position: absolute;
+            top: 90px;
+            left: 10px;
+            z-index: 2;
+        }
+
+        #popup {
+            background-color: rgba(208, 61, 161, 0.8);
+            padding: 3px;
+            border-radius: 4px;
+            box-shadow: 0 1px 4px rgba(75, 37, 85, 0.534);
+            font-size: 12px;
+            font-style: bold;
         }
     </style>
 </head>
 
 <body>
-    <div id="map" class="map" tabindex="0"></div>
-    <button id="zoom-out">Zoom out</button>
-    <button id="zoom-in">Zoom in</button>
-    <script>
-        var map = new ol.Map({
-            layers: [
-                new ol.layer.Tile({
-                    source: new ol.source.OSM()
+    <div class="alert alert-primary text-center" role="alert">
+        <h3>
+            Museum di Yogyakarta
+        </h3>
+    </div>
+    <div id="map">
+        <div id="popup"></div>
+        <div id="map-buttons">
+            <button id="zoom-out">Zoom Out</button>
+            <button id="zoom-in">Zoom In</button>
+        </div>
+        <!-- Bootstrap -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
+            crossorigin="anonymous"></script>
+        <!-- openlayers -->
+        <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.5.0/build/ol.js"></script>
+        <script>
+            document.getElementById('zoom-out').onclick = function () {
+                var view = map.getView();
+                var zoom = view.getZoom();
+                view.setZoom(zoom - 1);
+            };
+            document.getElementById('zoom-in').onclick = function () {
+                var view = map.getView();
+                var zoom = view.getZoom();
+                view.setZoom(zoom + 1);
+            };
+
+            var Circle = ol.style.Circle,
+                Style = ol.style.Style;
+
+            var markers = [
+                { lat: -7.799991, lon: 110.367667, info: 'Taman Budaya Yogyakarta' },
+                { lat: -7.800376, lon: 110.366222, info: 'Vredeburg Museum' },
+                { lat: -7.802456, lon: 110.364367, info: 'Museum Sonobudoyo' },
+                { lat: -7.790303, lon: 110.415762, info: 'Museum Dirgantara' },
+                { lat: -7.749590, lon: 110.369607, info: 'Monumen Jogja Kembali' }
+            ];
+
+            var vectorSource = new ol.source.Vector();
+
+            markers.forEach(function (marker) {
+                var pointFeature = new ol.Feature({
+                    geometry: new ol.geom.Point(
+                        ol.proj.fromLonLat([marker.lon, marker.lat])
+                    ),
+                    text: marker.info
+                });
+
+                var pointStyle = new Style({
+                    image: new Circle({
+                        radius: 7,
+                        fill: new ol.style.Fill({ color: 'red' }),
+                        stroke: new ol.style.Stroke({ color: 'white', width: 2 }),
+                    }),
+                });
+
+                pointFeature.setStyle(pointStyle);
+                vectorSource.addFeature(pointFeature);
+            });
+
+            var vectorLayer = new ol.layer.Vector({
+                source: vectorSource,
+            });
+
+            var baseMap = new ol.layer.Tile({
+                source: new ol.source.OSM()
+            });
+
+
+            var map = new ol.Map({
+                target: 'map',
+                layers: [
+                    baseMap,
+                    vectorLayer
+                ],
+                view: new ol.View({
+                    center: ol.proj.transform([110.5985915, -7.9668418], 'EPSG:4326', 'EPSG:3857'),
+                    zoom: 9,
                 })
-            ],
-            target: 'map',
-            controls: ol.control.defaults({
-                attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
-                    collapsible: false
-                })
-            }),
+            });
 
-            //EPSG : 3857
-            view: new ol.View({
-                center: ol.proj.transform([110, -7, 0], 'EPSG:4326', 'EPSG:3857'),
-                //center: [545377, 5290934666, 6867785, 761987235],
-                zoom: 7
-            })
-        });
-        document.getElementById('zoom-out').onclick = function () {
-            var view = map.getView();
-            var zoom = view.getZoom();
-            console.log('Debug zoom out : ' + zoom);
-            view.setZoom(zoom - 1);
-        };
-        document.getElementById('zoom-in').onclick = function () {
-            var view = map.getView();
-            var zoom = view.getZoom();
-            console.log('Debug zoom in : ' + zoom);
-            view.setZoom(zoom + 1);
-        };
+            // info pada pop up
+            var element = document.getElementById('popup');
 
-        //Tambah Data Point
+            var popup = new ol.Overlay({
+                element: element,
+                positioning: 'bottom-center',
+                stopEvent: false,
+                offset: [0, -5],
+            });
+            map.addOverlay(popup);
 
-        //var point = new ol.geom.Point(ol.proj.transform([110, -7], 'EPSG:4326', 'EPSG:3857'),)
-        //var feature = new ol.Feature({
-        // geometry: point
-        //   })
-
-        // var vectorLayer = new ol.layer.Vector({
-        //  source: new ol.source.Vector({
-        //  features: [feature]
-        //  })
-        // });
-
-        var point = new ol.geom.Point(ol.proj.transform([110.374534, -7.774860], 'EPSG:4326', 'EPSG:3857'),)
-        var feature = new ol.Feature({
-            geometry: point
-        })
-
-        var vectorLayer = new ol.layer.Vector({
-            source: new ol.source.Vector({
-                features: [feature]
-            })
-        });
-
-        map.addLayer(vectorLayer);
-
-
-
-    </script>
-
-
-
+            // pengaturan pop up
+            map.on('click', function (evt) {
+                var feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
+                    return feature;
+                });
+                if (feature) {
+                    var coordinates = feature.getGeometry().getCoordinates();
+                    popup.setPosition(coordinates);
+                    var content = feature.get('text');
+                    element.innerHTML = content;
+                } else {
+                    popup.setPosition(undefined);
+                }
+            });
+        </script>
 </body>
 
 </html>
